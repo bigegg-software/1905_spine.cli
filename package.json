@@ -1,0 +1,37 @@
+{
+  "name": "spine-cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bigegg-software/1905_spine.cli.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bigegg-software/1905_spine.cli/issues"
+  },
+  "homepage": "https://github.com/bigegg-software/1905_spine.cli#readme",
+  "dependencies": {
+    "acm-client": "^3.1.0",
+    "chalk": "^2.4.2",
+    "commander": "^2.19.0",
+    "configstore": "^4.0.0",
+    "fstream": "^1.0.11",
+    "node-fetch": "^2.3.0",
+    "parse": "^2.2.1",
+    "prompts": "^2.0.4",
+    "tar": "^4.4.8",
+    "tempfile": "^2.0.0",
+    "underscore": "^1.9.1",
+    "walk": "^2.3.14"
+  },
+  "bin": {
+    "spine": "src/main.js"
+  }
+}
