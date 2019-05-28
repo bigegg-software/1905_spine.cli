@@ -39,23 +39,16 @@ if (!process.argv.slice(2).length) {
 
 
 async function exec_config() {
+    //check if in aliyun cloud shell
+    let aliyunUa = process.env['ALIYUN_USER_AGENT'];
+    if (aliyunUa && aliyunUa.toLowerCase().startsWith('cloudshell')) {
+        console.log(chalk.green('Detected Aliyun Cloud Shell.'))
+        console.log(chalk.green('Using aliyun.'))
+        localConf.set('cloudProvider', 'aliyun');
+        return;
+    }
 
-    let response = await prompts([{
-        type: 'text',
-        name: 'aliyunAk',
-        message: 'aliyun AK?'
-    },{
-        type: 'text',
-        name: 'aliyunSk',
-        message: 'aliyun SK?'
-    }]);
-
-    localConf.set('cloud.aliyun.ak', response.aliyunAk)
-    localConf.set('cloud.aliyun.sk', response.aliyunSk)
-
-    //TODO prompt
-    const _provider = 'aliyun';
-    localConf.set('cloudProvider', _provider);
+    throw "UNSUPPORTED ENV"
 }
 
 process.on('uncaughtException', e => {

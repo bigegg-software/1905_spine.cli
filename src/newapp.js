@@ -13,6 +13,8 @@ async function run(name) {
         console.error('');
         process.exit(1);
     }
+
+    await cp.newapp(name)
 }
 
 module.exports = {
