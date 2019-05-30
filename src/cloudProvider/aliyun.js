@@ -3,6 +3,7 @@
 const chalk = require('chalk')
 const tempy = require('tempy');
 const path = require('path');
+const fs = require('fs');
 const localConf = require('../localConf');
 
 const { spawnSync } = require('child_process');
@@ -11,6 +12,20 @@ const networkConfDir = path.join(__dirname, '..', '..', 'resources', 'aliyun_net
 
 
 async function newapp(name) {
+
+    //TODO: generate appId masterkey and render from zygote
+
+    //TODO: check .ssh exist
+    const dotSshDir = path.join(process.env['HOME'], '.ssh')
+    const idRsa = fs.readFileSync(path.join(dotSshDir, 'id_rsa'))
+    const idRsaPub = fs.readFileSync(path.join(dotSshDir, 'id_rsa.pub'))
+
+    //TODO prompt for repo url
+    const gitRepoUrl = 'git@github.com:bigegg-software/BServer.zygote.git'
+
+    //TODO ide password
+    const idePassword = 'jones0036'
+
     const tmpDir = tempy.directory();
     let res = spawnSync('cp' , [path.join(networkConfDir, '*.tf'), tmpDir], { shell: true })
     if (res.status !== 0) {
@@ -71,6 +86,14 @@ async function newapp(name) {
     aliyunCliCreateEciArgs.push('--EipInstanceId', netConf.eip_id)
     aliyunCliCreateEciArgs.push('--ContainerGroupName', cgroupName)
 
+    aliyunCliCreateEciArgs.push('--Volume.1.Name', 'sshConf');
+    aliyunCliCreateEciArgs.push('--Volume.1.Type', 'ConfigFileVolume');
+    aliyunCliCreateEciArgs.push('--Volume.1.ConfigFileVolume.ConfigFileToPath.1.Path', 'id_rsa')
+    aliyunCliCreateEciArgs.push('--Volume.1.ConfigFileVolume.ConfigFileToPath.1.Content', idRsa.toString('base64'))
+    aliyunCliCreateEciArgs.push('--Volume.1.ConfigFileVolume.ConfigFileToPath.2.Path', 'id_rsa.pub')
+    aliyunCliCreateEciArgs.push('--Volume.1.ConfigFileVolume.ConfigFileToPath.2.Content', idRsaPub.toString('base64'))
+
+
     aliyunCliCreateEciArgs.push('--Container.1.Image', 'registry.cn-hangzhou.aliyuncs.com/spine/codeserver:latest')
     aliyunCliCreateEciArgs.push('--Container.1.Name', 'codeserver')
     aliyunCliCreateEciArgs.push('--Container.1.Cpu', '1')
@@ -80,11 +103,14 @@ async function newapp(name) {
     aliyunCliCreateEciArgs.push('--Container.1.Port.2.Protocol', 'TCP')
     aliyunCliCreateEciArgs.push('--Container.1.Port.2.Port', '1337')
     aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Key', 'GIT_REPO_URL')
-    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Value', 'git@github.com:bigegg-software/BServer.zygote.git')
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Value', gitRepoUrl)
+    aliyunCliCreateEciArgs.push('--Container.1.VolumeMount.1.Name', 'sshConf');
+    aliyunCliCreateEciArgs.push('--Container.1.VolumeMount.1.ReadOnly', 'False');
+    aliyunCliCreateEciArgs.push('--Container.1.VolumeMount.1.MountPath', '/home/coder/.ssh');
 
 
     aliyunCliCreateEciArgs.push('--Container.1.Arg.1=--password')
-    aliyunCliCreateEciArgs.push('--Container.1.Arg.2', 'jones0036')
+    aliyunCliCreateEciArgs.push('--Container.1.Arg.2', idePassword);
     res = spawnSync('aliyun' , aliyunCliCreateEciArgs, {
         shell: true ,
         stdio: 'inherit',
