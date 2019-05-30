@@ -4,7 +4,7 @@ variable "number_format" {
 }
 
 variable "vpc_name" {
-  default = "example-eci-parse-server"
+  default = "spine-app"
 }
 
 variable "vpc_cidr" {
@@ -24,5 +24,5 @@ variable "availability_zone" {
 }
 
 variable "sg_name" {
-  default = "example-eci-parse-server"
+  default = "spine-app"
 }

@@ -28,8 +28,10 @@ async function newapp(name) {
         console.error(res.error);
         throw "terraform init failed"
     }
+    let cgroupName = `${name}-dev`;
 
-    res = spawnSync('terraform' , ['apply', '-auto-approve', '-var', `vpc_name=${name}-dev`], {
+    let tfApplyArgs = ['apply', '-auto-approve', '-var', `vpc_name=${cgroupName}`,'-var', `sg_name=${cgroupName}`]
+    res = spawnSync('terraform' , tfApplyArgs, {
         shell: true ,
         stdio: 'inherit',
         cwd: tmpDir
@@ -60,7 +62,6 @@ async function newapp(name) {
         }
     }
 
-    let cgroupName = `${name}-dev`;
     let aliyunCliCreateEciArgs = ['eci', 'CreateContainerGroup']
 
     aliyunCliCreateEciArgs.push('--RegionId', netConf.region_id)
@@ -77,6 +78,15 @@ async function newapp(name) {
     aliyunCliCreateEciArgs.push('--Container.1.Port.1.Protocol', 'TCP')
     aliyunCliCreateEciArgs.push('--Container.1.Port.1.Port', '8443')
 
+
+    //aliyunCliCreateEciArgs.push('--Container.1.Command.1', 'dump-init')
+    //aliyunCliCreateEciArgs.push('--Container.1.Arg.1', 'code-server')
+    //aliyunCliCreateEciArgs.push('--Container.1.Arg.2=--password')
+    //aliyunCliCreateEciArgs.push('--Container.1.Arg.3', 'jones0036')
+
+
+    aliyunCliCreateEciArgs.push('--Container.1.Arg.1=--password')
+    aliyunCliCreateEciArgs.push('--Container.1.Arg.2', 'jones0036')
     res = spawnSync('aliyun' , aliyunCliCreateEciArgs, {
         shell: true ,
         stdio: 'inherit',
