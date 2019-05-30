@@ -71,18 +71,16 @@ async function newapp(name) {
     aliyunCliCreateEciArgs.push('--EipInstanceId', netConf.eip_id)
     aliyunCliCreateEciArgs.push('--ContainerGroupName', cgroupName)
 
-    aliyunCliCreateEciArgs.push('--Container.1.Image', 'monostream/code-server:latest')
+    aliyunCliCreateEciArgs.push('--Container.1.Image', 'registry.cn-hangzhou.aliyuncs.com/spine/codeserver:latest')
     aliyunCliCreateEciArgs.push('--Container.1.Name', 'codeserver')
     aliyunCliCreateEciArgs.push('--Container.1.Cpu', '1')
-    aliyunCliCreateEciArgs.push('--Container.1.Memory', '1')
+    aliyunCliCreateEciArgs.push('--Container.1.Memory', '2')
     aliyunCliCreateEciArgs.push('--Container.1.Port.1.Protocol', 'TCP')
     aliyunCliCreateEciArgs.push('--Container.1.Port.1.Port', '8443')
-
-
-    //aliyunCliCreateEciArgs.push('--Container.1.Command.1', 'dump-init')
-    //aliyunCliCreateEciArgs.push('--Container.1.Arg.1', 'code-server')
-    //aliyunCliCreateEciArgs.push('--Container.1.Arg.2=--password')
-    //aliyunCliCreateEciArgs.push('--Container.1.Arg.3', 'jones0036')
+    aliyunCliCreateEciArgs.push('--Container.1.Port.2.Protocol', 'TCP')
+    aliyunCliCreateEciArgs.push('--Container.1.Port.2.Port', '1337')
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Key', 'GIT_REPO_URL')
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Value', 'git@github.com:bigegg-software/BServer.zygote.git')
 
 
     aliyunCliCreateEciArgs.push('--Container.1.Arg.1=--password')
