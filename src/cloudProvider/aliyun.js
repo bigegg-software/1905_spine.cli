@@ -8,7 +8,8 @@ const tempy = require('tempy');
 const path = require('path');
 const fs = require('fs');
 const localConf = require('../localConf');
-
+const tar = require('tar');
+const walk = require('walk');
 const { spawnSync } = require('child_process');
 
 const networkConfDir = path.join(__dirname, '..', '..', 'resources', 'aliyun_network')
@@ -26,7 +27,12 @@ async function newapp(name) {
     const idRsaPub = fs.readFileSync(path.join(dotSshDir, 'id_rsa.pub'))
 
     //TODO prompt for repo url
-    const gitRepoUrl = 'git@github.com:bigegg-software/BServer.zygote.git'
+    const gitRepoUrl = 'git@github.com:Jones0036/spine-app-test.git'
+    //const response = await prompts({
+    //    type: 'text',
+    //    name: 'meaning',
+    //    message: 'What is the meaning of life?'
+    //});
 
     //TODO ide password
     const idePassword = 'jones0036'
