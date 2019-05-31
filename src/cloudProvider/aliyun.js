@@ -8,8 +8,7 @@ const tempy = require('tempy');
 const path = require('path');
 const fs = require('fs');
 const localConf = require('../localConf');
-const tar = require('tar');
-const walk = require('walk');
+const { renderAllTemplates, downloadAndUnzipZygote } = require('../util')
 const { spawnSync } = require('child_process');
 
 const networkConfDir = path.join(__dirname, '..', '..', 'resources', 'aliyun_network')
@@ -17,8 +16,13 @@ const networkConfDir = path.join(__dirname, '..', '..', 'resources', 'aliyun_net
 
 async function newapp(name) {
 
+    const tmpDir = tempy.directory();
     //TODO: conf zygote 
     const ZYGOTE_TGZ_URL = 'https://github.com/bigegg-software/BServer.zygote/archive/v0.9.tar.gz';
+
+    const codeDir = path.join(tmpDir, 'code')
+    fs.mkdirSync(codeDir);
+    await downloadAndUnzipZygote(ZYGOTE_TGZ_URL, codeDir);
 
 
     //TODO: check .ssh exist
@@ -37,7 +41,6 @@ async function newapp(name) {
     //TODO ide password
     const idePassword = 'jones0036'
 
-    const tmpDir = tempy.directory();
     let res = spawnSync('cp' , [path.join(networkConfDir, '*.tf'), tmpDir], { shell: true })
     if (res.status !== 0) {
         console.error(res.error);
@@ -114,6 +117,7 @@ async function newapp(name) {
 
     console.log('app ctx', ctx);
 
+    await renderAllTemplates(ctx, codeDir);
     return ;
 
 
