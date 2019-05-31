@@ -33,6 +33,7 @@ async function newapp(name) {
         throw "copy tf conf to tmp dir failed"
     }
 
+    return ;
 
     res = spawnSync('terraform' , ['init'], {
         shell: true ,
@@ -43,9 +44,8 @@ async function newapp(name) {
         console.error(res.error);
         throw "terraform init failed"
     }
-    let cgroupName = `${name}-dev`;
 
-    let tfApplyArgs = ['apply', '-auto-approve', '-var', `vpc_name=${cgroupName}`,'-var', `sg_name=${cgroupName}`]
+    let tfApplyArgs = ['apply', '-auto-approve', '-var', `app_name=${name}`]
     res = spawnSync('terraform' , tfApplyArgs, {
         shell: true ,
         stdio: 'inherit',
@@ -67,24 +67,25 @@ async function newapp(name) {
         throw "terraform output failed"
     }
 
-    let netConf = {};
+    let tfRes = {};
 
     let rawConf = JSON.parse(res.stdout.toString());
     
     for (let key in rawConf) {
         if (rawConf[key] && rawConf[key].value !== undefined) {
-            netConf[key] = rawConf[key].value
+            tfRes[key] = rawConf[key].value
         }
     }
 
+
     let aliyunCliCreateEciArgs = ['eci', 'CreateContainerGroup']
 
-    aliyunCliCreateEciArgs.push('--RegionId', netConf.region_id)
-    aliyunCliCreateEciArgs.push('--SecurityGroupId', netConf.securitygroup_id)
-    aliyunCliCreateEciArgs.push('--VSwitchId', netConf.vswitch_id)
-    aliyunCliCreateEciArgs.push('--ZoneId', netConf.zone_id) 
-    aliyunCliCreateEciArgs.push('--EipInstanceId', netConf.eip_id)
-    aliyunCliCreateEciArgs.push('--ContainerGroupName', cgroupName)
+    aliyunCliCreateEciArgs.push('--RegionId', tfRes.region_id)
+    aliyunCliCreateEciArgs.push('--SecurityGroupId', tfRes.securitygroup_id)
+    aliyunCliCreateEciArgs.push('--VSwitchId', tfRes.vswitch_id)
+    aliyunCliCreateEciArgs.push('--ZoneId', tfRes.zone_id) 
+    aliyunCliCreateEciArgs.push('--EipInstanceId', tfRes.eip_id)
+    aliyunCliCreateEciArgs.push('--ContainerGroupName', `${name}-dev`)
 
     aliyunCliCreateEciArgs.push('--Volume.1.Name', 'sshConf');
     aliyunCliCreateEciArgs.push('--Volume.1.Type', 'ConfigFileVolume');

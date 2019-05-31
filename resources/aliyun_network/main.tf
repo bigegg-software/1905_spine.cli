@@ -2,8 +2,44 @@ provider "alicloud" {
   region     = "${var.region}"
 }
 
+resource "alicloud_oss_bucket" "app_bucket" {
+ bucket = "spine-dev-${var.app_name}"
+ acl = "public-read"
+}
+
+resource "alicloud_ram_user" "ram_user" {
+  name = "spine-dev-master-${var.app_name}"
+  force = true
+}
+
+resource "alicloud_ram_access_key" "ak" {
+  user_name = "${alicloud_ram_user.ram_user.name}"
+  secret_file = "/tmp/secret.txt"
+}
+
+resource "alicloud_ram_policy" "app_policy" {
+  name = "${alicloud_ram_user.ram_user.name}"
+  statement = [
+    {
+      effect = "Allow"
+      action = [
+        "oss:ListObjects",
+        "oss:GetObject",
+        "oss:PutObject"]
+      resource = [
+        "acs:oss:*:*:${alicloud_oss_bucket.app_bucket.bucket}",
+        "acs:oss:*:*:${alicloud_oss_bucket.app_bucket.bucket}/*"]
+    }]
+  force = true
+}
+
+resource "alicloud_ram_user_policy_attachment" "attach" {
+  policy_name = "${alicloud_ram_policy.app_policy.name}"
+  policy_type = "Custom"
+  user_name = "${alicloud_ram_user.ram_user.name}"
+}
 resource "alicloud_vpc" "vpc" {
-  name       = "${format("%s-%s", var.vpc_name, format(var.number_format, count.index+1))}"
+  name       = "${format("%s-%s", var.app_name, format(var.number_format, count.index+1))}"
   cidr_block = "${var.vpc_cidr}"
 }
 
@@ -14,7 +50,7 @@ resource "alicloud_vswitch" "vsw" {
 }
 
 resource "alicloud_security_group" "sg" {
-  name   = "${format("%s-%s", var.sg_name, format(var.number_format, count.index+1))}"
+  name   = "${format("%s-%s", var.app_name, format(var.number_format, count.index+1))}"
   vpc_id = "${alicloud_vpc.vpc.id}"
 }
 
