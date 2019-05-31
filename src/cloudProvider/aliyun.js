@@ -26,6 +26,7 @@ async function newapp(name) {
     //TODO ide password
     const idePassword = 'jones0036'
 
+    return ;
     const tmpDir = tempy.directory();
     let res = spawnSync('cp' , [path.join(networkConfDir, '*.tf'), tmpDir], { shell: true })
     if (res.status !== 0) {
@@ -33,7 +34,8 @@ async function newapp(name) {
         throw "copy tf conf to tmp dir failed"
     }
 
-    return ;
+
+
 
     res = spawnSync('terraform' , ['init'], {
         shell: true ,
@@ -45,7 +47,11 @@ async function newapp(name) {
         throw "terraform init failed"
     }
 
-    let tfApplyArgs = ['apply', '-auto-approve', '-var', `app_name=${name}`]
+    const userSecretFile = path.join(tmpDir, 'user_secret')
+    let tfApplyArgs = ['apply', '-auto-approve',
+        '-var', `app_name=${name}`,
+        '-var', `user_secret_file=${userSecretFile}`,
+    ];
     res = spawnSync('terraform' , tfApplyArgs, {
         shell: true ,
         stdio: 'inherit',
@@ -76,6 +82,13 @@ async function newapp(name) {
             tfRes[key] = rawConf[key].value
         }
     }
+
+    let userSecrets = JSON.parse(fs.readFileSync(userSecretFile));
+
+    let ramAk= userSecrets.AccessKeySecret;
+    let ramSk = userSecrets.AccessKeyId;
+
+    fs.unlinkSync(userSecretFile);
 
 
     let aliyunCliCreateEciArgs = ['eci', 'CreateContainerGroup']

@@ -14,7 +14,7 @@ resource "alicloud_ram_user" "ram_user" {
 
 resource "alicloud_ram_access_key" "ak" {
   user_name = "${alicloud_ram_user.ram_user.name}"
-  secret_file = "/tmp/secret.txt"
+  secret_file = "${var.user_secret_file}"
 }
 
 resource "alicloud_ram_policy" "app_policy" {

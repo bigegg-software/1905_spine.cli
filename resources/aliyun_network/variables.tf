@@ -2,6 +2,8 @@ variable "app_name" {
   default = "spine-test-app"
 }
 
+variable "user_secret_file" {
+}
 
 variable "number_format" {
   description = "The number format used to output."
