@@ -1,6 +1,9 @@
 'use strict';
 
 const chalk = require('chalk')
+const nanoid = require("nanoid");
+const prompts = require("prompts");
+
 const tempy = require('tempy');
 const path = require('path');
 const fs = require('fs');
@@ -13,7 +16,9 @@ const networkConfDir = path.join(__dirname, '..', '..', 'resources', 'aliyun_net
 
 async function newapp(name) {
 
-    //TODO: generate appId masterkey and render from zygote
+    //TODO: conf zygote 
+    const ZYGOTE_TGZ_URL = 'https://github.com/bigegg-software/BServer.zygote/archive/v0.9.tar.gz';
+
 
     //TODO: check .ssh exist
     const dotSshDir = path.join(process.env['HOME'], '.ssh')
@@ -26,7 +31,6 @@ async function newapp(name) {
     //TODO ide password
     const idePassword = 'jones0036'
 
-    return ;
     const tmpDir = tempy.directory();
     let res = spawnSync('cp' , [path.join(networkConfDir, '*.tf'), tmpDir], { shell: true })
     if (res.status !== 0) {
@@ -85,10 +89,27 @@ async function newapp(name) {
 
     let userSecrets = JSON.parse(fs.readFileSync(userSecretFile));
 
-    let ramAk= userSecrets.AccessKeySecret;
-    let ramSk = userSecrets.AccessKeyId;
+    let ramAk = userSecrets.AccessKeyId;
+    let ramSk = userSecrets.AccessKeySecret;
 
     fs.unlinkSync(userSecretFile);
+
+    const ctx = {
+        name,
+        "appId": nanoid(24),
+        "masterKey": nanoid(24),
+        "bucket": tfRes.bucket_name,
+        "s3BaseUrl": tfRes.bucket_base_url,
+        "s3Region": tfRes.region_id,
+        "s3Ak": ramAk,
+        "s3Sk": ramSk,
+        "s3Endpoint": tfRes.bucket_endpoint
+    }
+
+    console.log('app ctx', ctx);
+
+    return ;
+
 
 
     let aliyunCliCreateEciArgs = ['eci', 'CreateContainerGroup']

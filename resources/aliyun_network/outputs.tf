@@ -30,3 +30,15 @@ output "eip_ip" {
   description = "The IP of the EIP."
   value       = "${alicloud_eip.default.0.ip_address}"
 }
+
+output "bucket_name" {
+    value = "${alicloud_oss_bucket.app_bucket.bucket}"
+}
+
+output "bucket_endpoint" {
+    value = "https://oss-${var.region}.aliyuncs.com"
+}
+
+output "bucket_base_url" {
+    value = "https://${alicloud_oss_bucket.app_bucket.bucket}.oss-${var.region}.aliyuncs.com"
+}
