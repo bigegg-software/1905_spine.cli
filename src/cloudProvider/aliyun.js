@@ -15,7 +15,7 @@ const { spawnSync } = require('child_process');
 
 const networkConfDir = path.join(__dirname, '..', '..', 'resources', 'aliyun_network')
 
-const DEFAULT_ZYGOTE_TGZ_URL = 'https://github.com/bigegg-software/BServer.zygote/archive/v0.9.tar.gz';
+const DEFAULT_ZYGOTE_TGZ_URL = 'https://github.com/bigegg-software/BServer.zygote/archive/v0.9.1.tar.gz';
 
 async function newapp(name) {
 
