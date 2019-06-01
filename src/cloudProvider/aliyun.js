@@ -157,7 +157,6 @@ async function newapp(name) {
     console.log('app ctx', ctx);
 
     await renderAllTemplates(ctx, codeDir);
-    return ;
 
 
 
