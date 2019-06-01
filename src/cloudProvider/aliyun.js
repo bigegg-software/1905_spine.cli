@@ -173,7 +173,7 @@ async function newapp(name) {
         await renderAllTemplates(ctx, codeDir);
 
         let gitCtx = git(codeDir);
-        await gitCtx.add(code);
+        await gitCtx.add(codeDir);
         await gitCtx.commit('spine zygote')
         await gitCtx.push('origin', 'master')
     }
