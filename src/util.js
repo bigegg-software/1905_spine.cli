@@ -1,7 +1,9 @@
 'use strict';
 
+const fs = require('fs');
 const walk = require('walk');
 const tar = require('tar');
+const path = require('path');
 const fetch = require('node-fetch');
 
 async function downloadAndUnzipZygote(url, targetDir) {

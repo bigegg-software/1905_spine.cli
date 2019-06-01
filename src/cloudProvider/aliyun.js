@@ -13,33 +13,72 @@ const { spawnSync } = require('child_process');
 
 const networkConfDir = path.join(__dirname, '..', '..', 'resources', 'aliyun_network')
 
+const DEFAULT_ZYGOTE_TGZ_URL = 'https://github.com/bigegg-software/BServer.zygote/archive/v0.9.tar.gz';
 
 async function newapp(name) {
 
+    const dotSshDir = path.join(process.env['HOME'], '.ssh')
+    if (!fs.existsSync(path.join(dotSshDir, 'id_rsa')) 
+        || !fs.existsSync(path.join(dotSshDir, 'id_rsa.pub')))
+    {
+        console.log(chalk.red("Please generate ssh keys, eg. using ssh-keygen,  and rerun again."))
+        throw "need id_rsa pub/private keys"
+    }
+
+    let idRsa = fs.readFileSync(path.join(dotSshDir, 'id_rsa'))
+    let idRsaPub = fs.readFileSync(path.join(dotSshDir, 'id_rsa.pub'))
+
+
     const tmpDir = tempy.directory();
-    //TODO: conf zygote 
-    const ZYGOTE_TGZ_URL = 'https://github.com/bigegg-software/BServer.zygote/archive/v0.9.tar.gz';
 
     const codeDir = path.join(tmpDir, 'code')
     fs.mkdirSync(codeDir);
-    await downloadAndUnzipZygote(ZYGOTE_TGZ_URL, codeDir);
+
+    let response = null;
+    response = await prompts({
+        type: 'text',
+        name: 'url',
+        message: 'ZygoteUrl?',
+        initial: DEFAULT_ZYGOTE_TGZ_URL
+    });
 
 
-    //TODO: check .ssh exist
-    const dotSshDir = path.join(process.env['HOME'], '.ssh')
-    const idRsa = fs.readFileSync(path.join(dotSshDir, 'id_rsa'))
-    const idRsaPub = fs.readFileSync(path.join(dotSshDir, 'id_rsa.pub'))
+    let zygoteUrl = response.url;
+    await downloadAndUnzipZygote(zygoteUrl, codeDir);
 
-    //TODO prompt for repo url
-    const gitRepoUrl = 'git@github.com:Jones0036/spine-app-test.git'
-    //const response = await prompts({
-    //    type: 'text',
-    //    name: 'meaning',
-    //    message: 'What is the meaning of life?'
-    //});
+//    prompts.inject(['git@github.com:Jones0036/spine-app-test.git'])
 
-    //TODO ide password
-    const idePassword = 'jones0036'
+    response = await prompts({
+        type: 'text',
+        name: 'url',
+        message: 'GitRepoUrl?',
+    });
+
+    const gitRepoUrl = response.url
+
+    if (gitRepoUrl) {
+
+        console.log(chalk.yellow("your ssh pubkey:"))
+        console.log("    " + idRsaPub.toString());
+        console.log("")
+        console.log(chalk.yellow("Please add it to your git repo. It will be needed soon."))
+
+        response = await prompts({
+            type: 'confirm',
+            name: 'url',
+            message: 'Please confirm that ssh pubkey is added to the git repo.'
+        });
+
+
+    }
+
+    response = await prompts({
+        type: 'text',
+        name: 'pw',
+        message: 'Set a password for IDE'
+    });
+
+    const idePassword = response.pw
 
     let res = spawnSync('cp' , [path.join(networkConfDir, '*.tf'), tmpDir], { shell: true })
     if (res.status !== 0) {
@@ -147,8 +186,10 @@ async function newapp(name) {
     aliyunCliCreateEciArgs.push('--Container.1.Port.1.Port', '8443')
     aliyunCliCreateEciArgs.push('--Container.1.Port.2.Protocol', 'TCP')
     aliyunCliCreateEciArgs.push('--Container.1.Port.2.Port', '1337')
-    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Key', 'GIT_REPO_URL')
-    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Value', gitRepoUrl)
+    if (gitRepoUrl) {
+        aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Key', 'GIT_REPO_URL')
+        aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Value', gitRepoUrl)
+    }
     aliyunCliCreateEciArgs.push('--Container.1.VolumeMount.1.Name', 'sshConf');
     aliyunCliCreateEciArgs.push('--Container.1.VolumeMount.1.ReadOnly', 'False');
     aliyunCliCreateEciArgs.push('--Container.1.VolumeMount.1.MountPath', '/home/coder/.ssh');
@@ -164,6 +205,8 @@ async function newapp(name) {
 
 
     console.log(tmpDir, res.status, res.error);
+
+    console.log(chalk.green('Your IDE will be at: https://' + tfRes.eip_ip + ':8443'))
 }
 
 module.exports = {
