@@ -73,7 +73,7 @@ async function newapp(name) {
     }
 
     response = await prompts({
-        type: 'text',
+        type: 'password',
         name: 'pw',
         message: 'Set a password for IDE'
     });
