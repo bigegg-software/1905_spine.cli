@@ -1,5 +1,7 @@
 'use strict';
 
+const git = require('simple-git/promise')
+
 const chalk = require('chalk')
 const nanoid = require("nanoid");
 const prompts = require("prompts");
@@ -31,8 +33,6 @@ async function newapp(name) {
 
     const tmpDir = tempy.directory();
 
-    const codeDir = path.join(tmpDir, 'code')
-    fs.mkdirSync(codeDir);
 
     let response = null;
     response = await prompts({
@@ -44,17 +44,23 @@ async function newapp(name) {
 
 
     let zygoteUrl = response.url;
-    await downloadAndUnzipZygote(zygoteUrl, codeDir);
+    if (!zygoteUrl) {
+        throw 'user aborted'
+    }
+    const zygoteDir = path.join(tmpDir, 'zygote')
+    fs.mkdirSync(zygoteDir)
+    await downloadAndUnzipZygote(zygoteUrl, zygoteDir);
 
 //    prompts.inject(['git@github.com:Jones0036/spine-app-test.git'])
 
     response = await prompts({
         type: 'text',
         name: 'url',
-        message: 'GitRepoUrl?',
+        message: 'Your app Git repo url?(Please use an existing and  empty repo).',
     });
 
     const gitRepoUrl = response.url
+    let codeDir = null;
 
     if (gitRepoUrl) {
 
@@ -65,11 +71,16 @@ async function newapp(name) {
 
         response = await prompts({
             type: 'confirm',
-            name: 'url',
-            message: 'Please confirm that ssh pubkey is added to the git repo.'
+            name: 'value',
+            message: 'Please confirm that ssh pubkey is added to the git repo.',
+            initial: true
         });
 
-
+        if (!response.value) {
+            throw 'user aborted'
+        }
+        codeDir = path.join(tmpDir, 'code')
+        await git().clone(gitRepoUrl, codeDir)
     }
 
     response = await prompts({
@@ -156,7 +167,17 @@ async function newapp(name) {
 
     console.log('app ctx', ctx);
 
-    await renderAllTemplates(ctx, codeDir);
+
+    if (codeDir) {
+        await downloadAndUnzipZygote(zygoteUrl, codeDir);
+        await renderAllTemplates(ctx, codeDir);
+
+        let gitCtx = git(codeDir);
+        await gitCtx.add(code);
+        await gitCtx.commit('spine zygote')
+        await gitCtx.push('origin', 'master')
+    }
+
 
 
 

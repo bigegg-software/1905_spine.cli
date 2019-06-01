@@ -14,6 +14,7 @@ async function downloadAndUnzipZygote(url, targetDir) {
             cwd: targetDir
         });
         extractor.on('close', resolve);
+        extractor.on('error', reject);
         res.body.pipe(extractor);
     });
 }
