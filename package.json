@@ -27,6 +27,7 @@
     "node-fetch": "^2.3.0",
     "parse": "^2.2.1",
     "prompts": "^2.0.4",
+    "simple-git": "^1.113.0",
     "tar": "^4.4.8",
     "tempy": "^0.3.0",
     "underscore": "^1.9.1",
