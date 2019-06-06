@@ -206,17 +206,23 @@ async function newapp(name) {
     aliyunCliCreateEciArgs.push('--Container.1.Port.1.Port', '8443')
     aliyunCliCreateEciArgs.push('--Container.1.Port.2.Protocol', 'TCP')
     aliyunCliCreateEciArgs.push('--Container.1.Port.2.Port', '1337')
-    if (gitRepoUrl) {
-        aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Key', 'GIT_REPO_URL')
-        aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Value', gitRepoUrl)
-    }
+
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Key', 'GIT_REPO_URL')
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Value', gitRepoUrl || '')
+
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.2.Key', 'PASSWORD')
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.2.Value', idePassword || '')
+
     aliyunCliCreateEciArgs.push('--Container.1.VolumeMount.1.Name', 'sshConf');
     aliyunCliCreateEciArgs.push('--Container.1.VolumeMount.1.ReadOnly', 'False');
     aliyunCliCreateEciArgs.push('--Container.1.VolumeMount.1.MountPath', '/home/coder/.ssh');
 
 
-    aliyunCliCreateEciArgs.push('--Container.1.Arg.1=--password')
-    aliyunCliCreateEciArgs.push('--Container.1.Arg.2', idePassword);
+    //aliyunCliCreateEciArgs.push('--Container.1.Arg.1=--password')
+    //aliyunCliCreateEciArgs.push('--Container.1.Arg.2', idePassword);
+
+
+
     res = spawnSync('aliyun' , aliyunCliCreateEciArgs, {
         shell: true ,
         stdio: 'inherit',
