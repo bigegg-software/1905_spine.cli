@@ -201,7 +201,7 @@ async function newapp(name) {
     aliyunCliCreateEciArgs.push('--Container.1.Image', 'registry.cn-hangzhou.aliyuncs.com/spine/codeserver:latest')
     aliyunCliCreateEciArgs.push('--Container.1.Name', 'codeserver')
     aliyunCliCreateEciArgs.push('--Container.1.Cpu', '1')
-    aliyunCliCreateEciArgs.push('--Container.1.Memory', '2')
+    aliyunCliCreateEciArgs.push('--Container.1.Memory', '4')
     aliyunCliCreateEciArgs.push('--Container.1.Port.1.Protocol', 'TCP')
     aliyunCliCreateEciArgs.push('--Container.1.Port.1.Port', '8443')
     aliyunCliCreateEciArgs.push('--Container.1.Port.2.Protocol', 'TCP')
