@@ -15,7 +15,7 @@ const { spawnSync } = require('child_process');
 
 const networkConfDir = path.join(__dirname, '..', '..', 'resources', 'aliyun_network')
 
-const DEFAULT_ZYGOTE_TGZ_URL = 'https://github.com/bigegg-software/BServer.zygote/archive/v0.9.1.tar.gz';
+const DEFAULT_ZYGOTE_TGZ_URL = 'https://github.com/bigegg-software/BServer.zygote/archive/v0.9.2.tar.gz';
 
 async function newapp(name) {
 
@@ -162,7 +162,8 @@ async function newapp(name) {
         "s3Region": tfRes.region_id,
         "s3Ak": ramAk,
         "s3Sk": ramSk,
-        "s3Endpoint": tfRes.bucket_endpoint
+        "s3Endpoint": tfRes.bucket_endpoint,
+        "mongoHost": `${name}-dev`
     }
 
     console.log('app ctx', ctx);
@@ -197,31 +198,52 @@ async function newapp(name) {
     aliyunCliCreateEciArgs.push('--Volume.1.ConfigFileVolume.ConfigFileToPath.2.Path', 'id_rsa.pub')
     aliyunCliCreateEciArgs.push('--Volume.1.ConfigFileVolume.ConfigFileToPath.2.Content', idRsaPub.toString('base64'))
 
+    aliyunCliCreateEciArgs.push('--Container.1.Image', 'mongo:4.0.5');
+    aliyunCliCreateEciArgs.push('--Container.1.Name', 'mongo');
+    aliyunCliCreateEciArgs.push('--Container.1.Cpu', '1');
+    aliyunCliCreateEciArgs.push('--Container.1.Memory', '1');
+    aliyunCliCreateEciArgs.push('--Container.1.Port.1.Protocol', 'TCP');
+    aliyunCliCreateEciArgs.push('--Container.1.Port.1.Port', '27017');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Key', 'PATH');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Value', '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.2.Key', 'GOSU_VERSION');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.2.Value', '1.10');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.3.Key', 'JSYAML_VERSION');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.3.Value', '3.10.0');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.4.Key', 'GPG_KEYS');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.4.Value', '9DA31620334BD75D9DCB49F368818C72E52529D4');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.5.Key', 'MONGO_PACKAGE');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.5.Value', 'mongodb-org');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.6.Key', 'MONGO_REPO');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.6.Value', 'repo.mongodb.org');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.7.Key', 'MONGO_MAJOR');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.7.Value', '4.0');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.8.Key', 'MONGO_VERSION');
+    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.8.Value', '4.0.5');
 
-    aliyunCliCreateEciArgs.push('--Container.1.Image', 'registry.cn-hangzhou.aliyuncs.com/spine/codeserver:latest')
-    aliyunCliCreateEciArgs.push('--Container.1.Name', 'codeserver')
-    aliyunCliCreateEciArgs.push('--Container.1.Cpu', '1')
-    aliyunCliCreateEciArgs.push('--Container.1.Memory', '4')
-    aliyunCliCreateEciArgs.push('--Container.1.Port.1.Protocol', 'TCP')
-    aliyunCliCreateEciArgs.push('--Container.1.Port.1.Port', '8443')
-    aliyunCliCreateEciArgs.push('--Container.1.Port.2.Protocol', 'TCP')
-    aliyunCliCreateEciArgs.push('--Container.1.Port.2.Port', '1337')
 
-    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Key', 'GIT_REPO_URL')
-    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.1.Value', gitRepoUrl || '')
+    aliyunCliCreateEciArgs.push('--Container.2.Image', 'registry.cn-hangzhou.aliyuncs.com/spine/codeserver:latest')
+    aliyunCliCreateEciArgs.push('--Container.2.Name', 'codeserver')
+    aliyunCliCreateEciArgs.push('--Container.2.Cpu', '1')
+    aliyunCliCreateEciArgs.push('--Container.2.Memory', '4')
+    aliyunCliCreateEciArgs.push('--Container.2.Port.1.Protocol', 'TCP')
+    aliyunCliCreateEciArgs.push('--Container.2.Port.1.Port', '8443')
+    aliyunCliCreateEciArgs.push('--Container.2.Port.2.Protocol', 'TCP')
+    aliyunCliCreateEciArgs.push('--Container.2.Port.2.Port', '1337')
 
-    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.2.Key', 'PASSWORD')
-    aliyunCliCreateEciArgs.push('--Container.1.EnvironmentVar.2.Value', idePassword || '')
+    aliyunCliCreateEciArgs.push('--Container.2.EnvironmentVar.1.Key', 'GIT_REPO_URL')
+    aliyunCliCreateEciArgs.push('--Container.2.EnvironmentVar.1.Value', gitRepoUrl || '')
 
-    aliyunCliCreateEciArgs.push('--Container.1.VolumeMount.1.Name', 'sshConf');
-    aliyunCliCreateEciArgs.push('--Container.1.VolumeMount.1.ReadOnly', 'False');
-    aliyunCliCreateEciArgs.push('--Container.1.VolumeMount.1.MountPath', '/home/coder/.ssh');
+    aliyunCliCreateEciArgs.push('--Container.2.EnvironmentVar.2.Key', 'PASSWORD')
+    aliyunCliCreateEciArgs.push('--Container.2.EnvironmentVar.2.Value', idePassword || '')
 
-
-    //aliyunCliCreateEciArgs.push('--Container.1.Arg.1=--password')
-    //aliyunCliCreateEciArgs.push('--Container.1.Arg.2', idePassword);
+    aliyunCliCreateEciArgs.push('--Container.2.EnvironmentVar.3.Key', 'CGROUP_NAME')
+    aliyunCliCreateEciArgs.push('--Container.2.EnvironmentVar.3.Value', `${name}-dev`)
 
 
+    aliyunCliCreateEciArgs.push('--Container.2.VolumeMount.1.Name', 'sshConf');
+    aliyunCliCreateEciArgs.push('--Container.2.VolumeMount.1.ReadOnly', 'False');
+    aliyunCliCreateEciArgs.push('--Container.2.VolumeMount.1.MountPath', '/home/coder/.ssh');
 
     res = spawnSync('aliyun' , aliyunCliCreateEciArgs, {
         shell: true ,
